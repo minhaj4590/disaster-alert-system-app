@@ -1,4 +1,6 @@
 import streamlit as st
+import time
+import google.generativeai as genai
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -294,7 +296,7 @@ filtered_df = df[
 # -------------- Navigation Tabs --------------
 tabs = option_menu(
     menu_title=None,
-    options=["Dashboard", "Forecast Report", "Map View", "Subscribe"],
+    options=["Dashboard", "Forecast Report", "Map View","AlertBot", "Subscribe"],
     icons=["bar-chart", "graph-up", "map", "envelope-open"],
     orientation="horizontal"
 )
@@ -540,7 +542,7 @@ def append_to_github_csv(new_data: dict):
         repo.create_file(FILE_PATH, "Create subscriber list", updated_csv)
 
 # ---- Inside your Subscribe tab form ----
-if tabs == "Subscribe":
+elif tabs == "Subscribe":
     st.title("📬 Subscribe to Alerts")
     with st.form("subscribe_form"):
         name = st.text_input("Name")
@@ -561,7 +563,115 @@ if tabs == "Subscribe":
             append_to_github_csv(new_data)
             st.success("Subscription data saved to GitHub successfully!")
 
+elif tabs == "AlertBot":
+    
+    gemini_key = st.secrets["GEMINI_KEY"]
+    genai.configure(api_key=gemini_key)
 
+    generation_config = {
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "top_k": 40,
+        "max_output_tokens": 2048,
+        "response_mime_type": "text/plain",
+    }
+
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        generation_config=generation_config,
+    )
+
+    def generate_response(user_input):
+        prompt = [
+            "You are a Disaster Alert Assistant named *AlertBot*.",
+            "Your sole responsibility is to provide information and guidance about ongoing or possible natural disasters such as earthquakes, floods, heatwaves, wildfires, and related safety instructions.",
+            "You should refuse to answer any unrelated questions politely and stay on topic.",
+            "Examples:",
+            "User: What is the capital of France?",
+            "Bot: I'm here to help with disaster alerts only. Please ask a disaster-related question.",
+            "User: How can I prepare for an earthquake?",
+            "Bot: To prepare for an earthquake, secure heavy furniture, make an emergency kit, and identify safe spots like under sturdy tables.",
+            f"User: {user_input}",
+            "Bot:"
+        ]
+        response = model.generate_content(prompt)
+        return response.text.strip()
+
+    # --- Streamlit UI Setup ---
+    st.set_page_config(page_title="AlertBot - Disaster Assistant", layout="centered")
+
+    st.markdown(
+        """
+        <style>
+        .centered-container {
+            max-width: 700px;
+            margin: auto;
+        }
+        .stChatInputContainer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: white;
+            z-index: 999;
+            padding: 10px 0;
+            border-top: 1px solid #ccc;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # --- Header ---
+    
+    st.markdown("<div class='centered-container'>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <h1 style='text-align:center; color:#00bcd4;'>🌐 AlertBot - Disaster Assistant</h1>
+        <p style='text-align:center; color:#ccc; font-size:18px;'>
+            Ask about natural disasters and get instant guidance. Stay safe. Stay alert.
+        </p>
+        <hr style='border: 1px solid #333;'/>
+        """,
+        unsafe_allow_html=True)
+
+    # --- Chat History ---
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    # --- Typing simulation ---
+    def stream_response(user_input):
+        try:
+            full_text = generate_response(user_input)
+        except Exception as e:
+            full_text = f"⚠️ Error: {e}"
+
+        for word in full_text.split():
+            yield word + " "
+            time.sleep(0.03)
+
+    # --- Chat input ---
+    prompt = st.chat_input("Type your disaster-related question:")
+    if prompt:
+        st.session_state.messages.append({"role": "user", "content": prompt})
+
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            placeholder = st.empty()
+            full_response_words = []
+            for word in stream_response(prompt):
+                full_response_words.append(word)
+                placeholder.markdown("".join(full_response_words))
+            full_response = "".join(full_response_words)
+
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 
