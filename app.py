@@ -514,7 +514,7 @@ elif tabs == "Map View":
 
 # -------------- Subscribe Tab --------------
 # GitHub token & repo info
-TOKEN = "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"
+TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO = "minhaj4590/disaster-forecasting"
 FILE_PATH = "subscribers.csv"
 
