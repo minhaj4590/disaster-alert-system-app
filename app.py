@@ -18,16 +18,20 @@ import json
 
 # Initialize Firebase only once
 if not firebase_admin._apps:
-    firebase_key_string = st.secrets["FIREBASE_KEY"]
-
-    # 2. Parse the JSON string into a Python dictionary
-    firebase_config = json.loads(firebase_key_string)
-
-    # 3. Create a Firebase credential object from the dictionary
-    cred = credentials.Certificate(firebase_config)
-
-    # 4. Initialize the Firebase app with the credential object
-    firebase_admin.initialize_app(cred)
+    cred = credentials.Certificate({
+  "type": "service_account",
+  "project_id": "disaster-alert-system-2b695",
+  "private_key_id": "59cebebf8787043a9752f03d90253b61291f614a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDYMglT66o53I/j\n430mSDU4nYwnbY3zWNAHxRtxUAmN5hOoF5AsAYQHIu5irhgGqCGBzvjg2PI6x+NH\n6pIcSdxjEPCvu2GD2dTOP/1M0B+ZYwHGsKXb8tdiCKsxsgS1USk/c0BVqx+hBANX\nny8rNEpuyqU2oi1norVqYU3FwwULn91Q5MA0/pn8mwt7lgtDUGS0gqgFQdCEcn4f\nLPw6BgffBxWjbzJKobeGVYv4ugRyv3ZfBuGS/B7e4dqUgvyKAzt2gOTR4Z+IzIdM\ni7XqaNvmlDHFWzpWcwKauJJUBNJFRrpBqShGNtbAmLRqpGAwREwsAZDyerg6B9vc\nY6WOyl3HAgMBAAECggEAEU8YPhbNHyrQfl9VQr5fPHQop3N2/PesWCLoyo6s5SZ5\nhmi0i0Fnz6Z1TYNAuy+01w66EE5uPlSIltZp8kfblDbj/j3TVdoX1pd68S5siTxL\nBRxZex2bLucgxa7J/7ZKxiC1EubLdnm6xsYg4aWjG/GvfotHdVeqjKTTtDSj78Us\nD8YCWYVaDs0LH6DW5aI5Yw2wm9q+JG5NvnaKkG5HEuNHqxEnhI0SFN6Zbl47vdNB\nwGmgx5XLKlGarQh9aDEQ63/uG0JI3l6XM5yxNnJY5np4Lp8GiqqYei0HI1ZldLVk\nc4c+ea1jmjczPsT1Hd+DjMqovYoPe4ooL77u0FKmoQKBgQD8nizUcKaEl8QDiAdd\nC+WtfWdctFTnb8ceQXeJJCxkYTezaBT4vFbC16fVmp/lbmH7jUkTpEiE43mBhxRm\nQTXPiP2Ppypi2HrLSLFBkntTyjxPxO9Fh01XpjCRNf1/W6nkL1IuKKnHxTd8IQ34\ncwSWlaVS3Mcj9fj/kxFUTUT2EQKBgQDbFwbbWQVnytq+JgH+c9yKjx6g3eknYHeN\nGwYMh9Svrko1kn/pKiW/Qqxt3hgRD3DFuk3GER6DGBt0lmz0nE61hiKBEYVqnecy\nzuvuBLbFyh1Nh6gnqcR4tn6rkivHqVCq5YRNc8TowAMhdI+6AdEIkFlWhM43ojDt\n2wCEt3jeVwKBgBL45jEGTNtEcqo5OyRX0mYXNv4VZRMEqBWzoQChwNvBGWfV900/\nB90WSTqXpE6c3asAz240NmYUl3mM5ZFQcHQnu7NgQKSv0XkW+okMMUr3s1PiXH4C\nTWK5zof5YBKCld3XV/qzfxzLyQD/kocITF3q20G/5wziWlMHfpOwQe+hAoGAF3RX\nn5PgKERnNoQLIpp0ucConsAi/bwuEEUcWKsR8dzOxP1yBBwm/lq86uYj3W+xuvk+\n6j1a7t3d0pVoBKfXJUe+2eJuTgOphJ7yUwDeMD569JnZPqXGCsY+uU9ksHNH14PK\nrh/+rIwhyasY1+jp3+jUJ5cAHKSYaF5Rp+OcZPECgYAKOCjOpavG8qLhb3o9JjvZ\nJWWUu7ekp2u6dp+WHXUE1CvzoCxf63xcm44Wd7QgTBwW4fVIzAqTVJoitf7zRQyv\nMhErPCKvuifZN26aMLJuU0rwtLnAID73lv0icm8MwOJ1n1Nj29VSv5T9M7MR6Ept\n2316eVoEFVPF9aDvbkZ4aw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@disaster-alert-system-2b695.iam.gserviceaccount.com",
+  "client_id": "100804845813075149982",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40disaster-alert-system-2b695.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+)
 
 #     firebase_admin.initialize_app(cred)
 
@@ -204,16 +208,20 @@ def fetch_data_safely():
     try:
         # Initialize Firebase only if it hasn't been initialized yet
         if not firebase_admin._apps:
-            firebase_key_string = st.secrets["FIREBASE_KEY"]
-
-            # Parse the JSON string into a Python dictionary
-            firebase_config = json.loads(firebase_key_string)
-
-            # Create a Firebase credential object from the dictionary
-            cred = credentials.Certificate(firebase_config)
-
-            # Initialize the Firebase app with the credential object
-            firebase_admin.initialize_app(cred)
+            cred = credentials.Certificate({
+  "type": "service_account",
+  "project_id": "disaster-alert-system-2b695",
+  "private_key_id": "59cebebf8787043a9752f03d90253b61291f614a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDYMglT66o53I/j\n430mSDU4nYwnbY3zWNAHxRtxUAmN5hOoF5AsAYQHIu5irhgGqCGBzvjg2PI6x+NH\n6pIcSdxjEPCvu2GD2dTOP/1M0B+ZYwHGsKXb8tdiCKsxsgS1USk/c0BVqx+hBANX\nny8rNEpuyqU2oi1norVqYU3FwwULn91Q5MA0/pn8mwt7lgtDUGS0gqgFQdCEcn4f\nLPw6BgffBxWjbzJKobeGVYv4ugRyv3ZfBuGS/B7e4dqUgvyKAzt2gOTR4Z+IzIdM\ni7XqaNvmlDHFWzpWcwKauJJUBNJFRrpBqShGNtbAmLRqpGAwREwsAZDyerg6B9vc\nY6WOyl3HAgMBAAECggEAEU8YPhbNHyrQfl9VQr5fPHQop3N2/PesWCLoyo6s5SZ5\nhmi0i0Fnz6Z1TYNAuy+01w66EE5uPlSIltZp8kfblDbj/j3TVdoX1pd68S5siTxL\nBRxZex2bLucgxa7J/7ZKxiC1EubLdnm6xsYg4aWjG/GvfotHdVeqjKTTtDSj78Us\nD8YCWYVaDs0LH6DW5aI5Yw2wm9q+JG5NvnaKkG5HEuNHqxEnhI0SFN6Zbl47vdNB\nwGmgx5XLKlGarQh9aDEQ63/uG0JI3l6XM5yxNnJY5np4Lp8GiqqYei0HI1ZldLVk\nc4c+ea1jmjczPsT1Hd+DjMqovYoPe4ooL77u0FKmoQKBgQD8nizUcKaEl8QDiAdd\nC+WtfWdctFTnb8ceQXeJJCxkYTezaBT4vFbC16fVmp/lbmH7jUkTpEiE43mBhxRm\nQTXPiP2Ppypi2HrLSLFBkntTyjxPxO9Fh01XpjCRNf1/W6nkL1IuKKnHxTd8IQ34\ncwSWlaVS3Mcj9fj/kxFUTUT2EQKBgQDbFwbbWQVnytq+JgH+c9yKjx6g3eknYHeN\nGwYMh9Svrko1kn/pKiW/Qqxt3hgRD3DFuk3GER6DGBt0lmz0nE61hiKBEYVqnecy\nzuvuBLbFyh1Nh6gnqcR4tn6rkivHqVCq5YRNc8TowAMhdI+6AdEIkFlWhM43ojDt\n2wCEt3jeVwKBgBL45jEGTNtEcqo5OyRX0mYXNv4VZRMEqBWzoQChwNvBGWfV900/\nB90WSTqXpE6c3asAz240NmYUl3mM5ZFQcHQnu7NgQKSv0XkW+okMMUr3s1PiXH4C\nTWK5zof5YBKCld3XV/qzfxzLyQD/kocITF3q20G/5wziWlMHfpOwQe+hAoGAF3RX\nn5PgKERnNoQLIpp0ucConsAi/bwuEEUcWKsR8dzOxP1yBBwm/lq86uYj3W+xuvk+\n6j1a7t3d0pVoBKfXJUe+2eJuTgOphJ7yUwDeMD569JnZPqXGCsY+uU9ksHNH14PK\nrh/+rIwhyasY1+jp3+jUJ5cAHKSYaF5Rp+OcZPECgYAKOCjOpavG8qLhb3o9JjvZ\nJWWUu7ekp2u6dp+WHXUE1CvzoCxf63xcm44Wd7QgTBwW4fVIzAqTVJoitf7zRQyv\nMhErPCKvuifZN26aMLJuU0rwtLnAID73lv0icm8MwOJ1n1Nj29VSv5T9M7MR6Ept\n2316eVoEFVPF9aDvbkZ4aw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@disaster-alert-system-2b695.iam.gserviceaccount.com",
+  "client_id": "100804845813075149982",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40disaster-alert-system-2b695.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+)
 
         # After initialization (or if already initialized), get the Firestore client
         db = firestore.client()
