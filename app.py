@@ -513,9 +513,19 @@ from github import Github
 import pandas as pd
 from io import StringIO
 
+from github import Github
+import pandas as pd
+from io import StringIO
+import re
+import streamlit as st
+
+REPO = "minhaj4590/disaster-forecasting"
+FILE_PATH = "subscribers.csv"
+TOKEN = "YOUR_GITHUB_TOKEN"  # Replace with your GitHub token
+
 def append_to_github_csv(new_data: dict):
     g = Github(TOKEN)
-    repo = g.get_repo(REPO)
+    repo = g.get_repo(REPO)  # Define repo here
     try:
         contents = repo.get_contents(FILE_PATH)
         csv_str = contents.decoded_content.decode()
@@ -529,6 +539,12 @@ def append_to_github_csv(new_data: dict):
         updated_csv = df.to_csv(index=False)
         repo.create_file(FILE_PATH, "Create subscriber list", updated_csv)
 
+def is_valid_email(email):
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email)
+
+def is_valid_phone(phone):
+    return re.match(r"^\+?\d{10,15}$", phone)  # Adjust regex as needed
+
 # ---- Inside your Subscribe tab form ----
 if tabs == "Subscribe":
     st.title("📬 Subscribe to Alerts")
@@ -536,20 +552,44 @@ if tabs == "Subscribe":
         name = st.text_input("Name")
         phone = st.text_input("Phone Number")
         email = st.text_input("Email")
-        country = st.text_input("Country")  # Changed from city to country
+        country = st.text_input("Country")
         preferred_alerts = st.multiselect("Preferred Alerts", df["event_type"].unique())
         submitted = st.form_submit_button("Subscribe")
         
         if submitted:
-            new_data = {
-                "name": name,
-                "phone": phone,
-                "email": email,
-                "country": country,  # changed here too
-                "preferred_alerts": ",".join(preferred_alerts)
-            }
-            append_to_github_csv(new_data)
-            st.success("Subscription data saved to GitHub successfully!")
+            # Check for blank fields
+            if not name or not phone or not email or not country or not preferred_alerts:
+                st.error("All fields must be filled!")
+            elif not is_valid_email(email):
+                st.error("Please enter a valid email address.")
+            elif not is_valid_phone(phone):
+                st.error("Please enter a valid phone number.")
+            else:
+                # Check if email or phone already exists
+                g = Github(TOKEN)  # Re-instantiate Github to access repo
+                repo = g.get_repo(REPO)  # Define repo here
+                try:
+                    contents = repo.get_contents(FILE_PATH)
+                    csv_str = contents.decoded_content.decode()
+                    df = pd.read_csv(StringIO(csv_str))
+                    
+                    if df[(df['email'] == email)].empty and df[(df['phone'] == phone)].empty:
+                        new_data = {
+                            "name": name,
+                            "phone": phone,
+                            "email": email,
+                            "country": country,
+                            "preferred_alerts": ",".join(preferred_alerts)
+                        }
+                        append_to_github_csv(new_data)
+                        st.success("Subscription data saved to GitHub successfully!")
+                    else:
+                        if not df[(df['email'] == email)].empty:
+                            st.error("A user is already subscribed with this email address.")
+                        if not df[(df['phone'] == phone)].empty:
+                            st.error("This phone number is already registered for alerts.")
+                except Exception as e:
+                    st.error("Error accessing subscriber data.")
 
 
 # sending alerts to subscribers
