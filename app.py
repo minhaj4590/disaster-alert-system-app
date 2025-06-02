@@ -542,7 +542,7 @@ def append_to_github_csv(new_data: dict):
         repo.create_file(FILE_PATH, "Create subscriber list", updated_csv)
 
 # ---- Inside your Subscribe tab form ----
-elif tabs == "Subscribe":
+if tabs == "Subscribe":
     st.title("📬 Subscribe to Alerts")
     with st.form("subscribe_form"):
         name = st.text_input("Name")
