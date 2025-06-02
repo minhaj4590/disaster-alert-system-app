@@ -520,9 +520,7 @@ elif tabs == "Map View":
 
 # -------------- Subscribe Tab --------------
 # GitHub token & repo info
-TOKEN = st.secrets["GITHUB_TOKEN"]
-REPO = "minhaj4590/disaster-forecasting"
-FILE_PATH = "subscribers.csv"
+
 
 # sending data to Github
 from github import Github
@@ -535,9 +533,9 @@ from io import StringIO
 import re
 import streamlit as st
 
+TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO = "minhaj4590/disaster-forecasting"
 FILE_PATH = "subscribers.csv"
-TOKEN = "YOUR_GITHUB_TOKEN"  # Replace with your GitHub token
 
 def append_to_github_csv(new_data: dict):
     g = Github(TOKEN)
