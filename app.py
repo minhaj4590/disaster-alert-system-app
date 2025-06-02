@@ -195,20 +195,7 @@ def get_dummy_data():
 def fetch_data_safely():
     try:
         if not firebase_admin._apps:
-            cred = credentials.Certificate({
-  "type": "service_account",
-  "project_id": "disaster-alert-system-2b695",
-  "private_key_id": "cfd31ff32e91bc2395b61f17f910394dbd716935",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCtXZyBLkPpIKoI\n0ffqgyHAckstuufQsqDjxUPFuMPP0oM9kfxJQ4yu476hHdcojts8vmPAqV7QXzM7\nRV8C9Nm4OUx1Ubm03AboF5Y2jCvq0HWwUkO4K8AZ8C+6syfK6MiOiz6IH/+r+u4E\n4hZoP9PWleMtw1AP0j58B/al07ul6n5XkKWMH5GQx399ch++6MyYePopInmjsGNU\ntwA3NhR0FQ/5hyyL/u8/WwxfNBuLZs3OzGJ2amovYQnkPKfdJvVKLkzz8VXeE/hl\nC6ohR8Iha2AGzI98iOA5lhlwh80vh3xeJ3emVBh4GoV0557mjjrmjr/WzxBXbCmj\nWSwjlgINAgMBAAECggEAIMTOdb5seK7DZPpnHW0e3pTb7+9hrNluvs7FEiTr4ibc\nxrEG2kRJ3a7Pk/2jcxeZigBEs6Bv+vvbn6rrnA/y7TbrZEuHyg9CwPDgZDwXewFf\nFW5fPXsLivuS0fvWHCzm58abEbjWp0e9YK/pY1gZLvjS4Y4G3o6zX9dTgCGm2OPL\nJzhS0ASsAZOsBaYklJmYTsohO89PxlFt4umGBJLGC0OhNU/gvgaMbBOSHnGuMWWP\nvy2h8qBxR9JCeMTQv8y7JBr71zRzy3LAQ/1ae3enKo9+1/D/hjqnGAfrF3xe5Xwy\nOz4blS0kcQ9EHy2zw7cNqWoqhk8Ja5M6+P1MGhuiAQKBgQDvRm46hP6Ovkd9y5Pi\nKygoHsKH5OX5YB2Lh7BE905fVEok0cAgNJGUusG14+s2d4FS8YWuov3UHW8DqZqf\nNutn3XF1334JRpdvkSfwbU/1jYFiPpR8/l/6E6hyqa27ksz8ekyB9T6+jf3b8Rdt\neL50XT6nRwJoG7zqIydrL3sZDQKBgQC5e81tsnClnQ3YeuyWnJAcPL0sMyJgockg\n2R4lv/S23qO3O7fraYju9Y83wD2w56KKMY36ExaI8RXs6aBr5TkVhid89kBWPAc1\njzbIWTsq4fSwHt/0AXpoy3ZyjkeJ+/nl+zi28aOqR8a6rdyim6RpFd2oxQC1xwL3\nCo7U21pNAQKBgQCOoiJ1WfBQ8Ra241MtgGJ4wBVgYs/Af049bc5i3jVm2F02Y56u\n1AdwbH+qyMne9xAtfHIfL2Q2PLF/smvMuzVK/hNzm52LM/xz8kinptICY68b/IgR\nlqVp8qv4ZjN9XD47xz+yPJqBhy0sHiTECjUmMqt1lfvWSaqsu/X0jCJKRQKBgC+Z\nN6R48DNv1EfDc8dKsiis5ZbcIGxP2D9XuEbTtcbf5390EcSVtpAr7+7MpIgrSSjR\ngq+0CkpmI8xCP+qwTi/Z13RX9Tar/OWftN1BGM/uYE55/dquLm2KGQFYxb8BLKX6\nDBnWdLuT48mwKDiKXGyjMdjHhWEgiwA+c1zoVYoBAoGBANd78WMtGG9p+l9hdpVi\nnxY67Lw8dOYvnO4BDdcejD4UliV83uDeauTjXeUqsII8SlTG1hIBEeFFLflB8XUa\n0rydMdnNcuVVe92YeKEwQerohVznyGMz/962cmI/fnzcya8OlBomumDUcedBNAeW\nV+xiQHTvbYhCKkphEquy7vXo\n-----END PRIVATE KEY-----\n",
-  "client_email": "firebase-adminsdk-fbsvc@disaster-alert-system-2b695.iam.gserviceaccount.com",
-  "client_id": "100804845813075149982",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40disaster-alert-system-2b695.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
-}
-)
+            cred = credentials.Certificate(st.secrets["FIREBASE_KEY"])
             firebase_admin.initialize_app(cred)
         db = firestore.client()
         docs = db.collection('disasters').stream()
