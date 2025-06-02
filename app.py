@@ -634,8 +634,8 @@ matches = []
 
 for _, sub in subs_df.iterrows():
     for _, dis in todays_disasters.iterrows():
-        if sub['country'].strip().lower() == dis['country'].strip().lower() and \
-           sub['preferred_alerts'].strip().lower() in dis['event_type'].strip().lower():
+        if sub['country'].lower() == dis['country'].lower() and \
+           sub['preferred_alerts'].lower() in dis['event_type'].lower():
             message = f"""
 Hello {sub['name']},
 ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
