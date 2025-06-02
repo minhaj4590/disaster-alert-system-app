@@ -18,7 +18,7 @@ import json
 
 # Initialize Firebase only once
 if not firebase_admin._apps:
-   service_account_info = json.loads(st.secrets["FIREBASE_KEY"])
+   service_account_info = st.secrets["FIREBASE_KEY"]
    cred = credentials.Certificate(service_account_info)
 #     firebase_admin.initialize_app(cred)
 
