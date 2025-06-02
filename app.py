@@ -18,7 +18,15 @@ import json
 
 # Initialize Firebase only once
 if not firebase_admin._apps:
-    cred = st.secrets["FIREBASE_KEY"]
+    firebase_key_string = st.secrets["FIREBASE_KEY"]
+
+    # 2. Parse the JSON string into a Python dictionary
+    firebase_config = json.loads(firebase_key_string)
+
+    # 3. Create a Firebase credential object from the dictionary
+    cred = credentials.Certificate(firebase_config)
+
+    # 4. Initialize the Firebase app with the credential object
     firebase_admin.initialize_app(cred)
 
 #     firebase_admin.initialize_app(cred)
@@ -194,9 +202,20 @@ def get_dummy_data():
 @st.cache_data
 def fetch_data_safely():
     try:
+        # Initialize Firebase only if it hasn't been initialized yet
         if not firebase_admin._apps:
-            cred = st.secrets["FIREBASE_KEY"]
+            firebase_key_string = st.secrets["FIREBASE_KEY"]
+
+            # Parse the JSON string into a Python dictionary
+            firebase_config = json.loads(firebase_key_string)
+
+            # Create a Firebase credential object from the dictionary
+            cred = credentials.Certificate(firebase_config)
+
+            # Initialize the Firebase app with the credential object
             firebase_admin.initialize_app(cred)
+
+        # After initialization (or if already initialized), get the Firestore client
         db = firestore.client()
         docs = db.collection('disasters').stream()
         records = []
@@ -214,7 +233,7 @@ def fetch_data_safely():
 
     except Exception as e:
         st.warning("⚠️ Firebase unavailable or quota exceeded. Showing dummy data.")
-        print("Firebase error:", e)
+        print("Firebase error:", e) # Good for debugging
         return get_dummy_data()
 
 # Fetch data
