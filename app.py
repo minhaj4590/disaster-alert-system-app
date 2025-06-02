@@ -14,6 +14,7 @@ from streamlit_folium import st_folium
 # innit firebase
 import firebase_admin
 from firebase_admin import credentials, firestore
+import json
 
 # Initialize Firebase only once
 if not firebase_admin._apps:
