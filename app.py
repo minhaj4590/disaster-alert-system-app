@@ -514,7 +514,7 @@ elif tabs == "Map View":
 
 # -------------- Subscribe Tab --------------
 # GitHub token & repo info
-TOKEN = "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"
+TOKEN = "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"
 REPO = "minhaj4590/disaster-forecasting"
 FILE_PATH = "subscribers.csv"
 
