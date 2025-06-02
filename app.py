@@ -18,7 +18,7 @@ import json
 
 # Initialize Firebase only once
 if not firebase_admin._apps:
-    cred = credentials.Certificate(st.secrets["FIREBASE_KEY"])
+    cred = st.secrets["FIREBASE_KEY"]
     firebase_admin.initialize_app(cred)
 
 #     firebase_admin.initialize_app(cred)
@@ -195,7 +195,7 @@ def get_dummy_data():
 def fetch_data_safely():
     try:
         if not firebase_admin._apps:
-            cred = credentials.Certificate(st.secrets["FIREBASE_KEY"])
+            cred = st.secrets["FIREBASE_KEY"]
             firebase_admin.initialize_app(cred)
         db = firestore.client()
         docs = db.collection('disasters').stream()
