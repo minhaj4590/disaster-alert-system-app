@@ -9,4 +9,5 @@ streamlit-option-menu
 firebase-admin
 PyGithub
 twilio
+google.generativeai
 
