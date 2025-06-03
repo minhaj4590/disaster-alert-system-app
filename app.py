@@ -93,7 +93,6 @@ def send_alert_to_subscriber(subscriber, todays_disasters, today):
         disaster_type = str(dis['event_type']).strip().upper()
 
         if subscriber_country == disaster_country and disaster_type in preferred_list:
-            st.write("✅ Match found")
             email = subscriber['email']
 
             # Unique key to avoid duplicate emails per day
