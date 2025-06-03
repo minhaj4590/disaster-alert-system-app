@@ -83,44 +83,55 @@ def send_email(to_email, subject, body):
         print(f"Failed to send email: {e}")
 
 def send_alert_to_subscriber(subscriber, todays_disasters, today):
-    # Normalize country and preferred alerts
+    # Normalize subscriber data
     subscriber_country = str(subscriber['country']).strip().lower()
-    preferred_list = [a.strip().upper() for a in str(subscriber['preferred_alerts']).split(',')]
+    preferred_list = [a.strip().upper() for a in subscriber['preferred_alerts'].split(',')]
 
-    st.write(f"Normalized Subscriber Country: {subscriber_country}")
-    st.write(f"Normalized Subscriber Preferred Alerts: {preferred_list}")
+    st.write(f"✅ Normalized Subscriber Country: {subscriber_country}")
+    st.write(f"✅ Normalized Subscriber Preferred Alerts: {preferred_list}")
+    st.write(f"📊 Number of disasters today: {len(todays_disasters)}")
 
     for _, dis in todays_disasters.iterrows():
+        # Normalize disaster data
         disaster_country = str(dis['country']).strip().lower()
         disaster_type = str(dis['event_type']).strip().upper()
 
-        st.write(f"Checking disaster: {disaster_type} in {disaster_country}")
+        # Debug print for each comparison
+        st.write(f"🔍 Comparing: subscriber_country={subscriber_country} == disaster_country={disaster_country}, "
+                 f"disaster_type={disaster_type} in preferred_list={preferred_list}")
 
         if subscriber_country == disaster_country and disaster_type in preferred_list:
             st.write("✅ Match found, sending email to", subscriber['email'])
+            email = subscriber['email']
 
-            key = f"{subscriber['email']}_{today}"
+            # Unique key to avoid duplicate emails per day
+            key = f"{email}_{today}"
+
             if key in st.session_state.get("alerts_sent", {}):
-                st.write("⚠️ Alert already sent today.")
-                return False  # Already sent
+                st.write("⚠️ Alert already sent today to", email)
+                return False  # Already sent today
 
-            # Send the email
+            # Compose message
             message = f"""
             Hello {subscriber['name']},
-            ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'][:10]}.
+            ⚠️ Alert: {dis['event_type']} reported in {dis.get('city', 'your area')} on {pd.to_datetime(dis['from_date']).date()}.
             Population exposed: {dis.get('population_exposed', 'Unknown')}
 
             Stay safe.
             - Disaster Alert System
             """
-            send_email(subscriber['email'], "🌍 Disaster Alert Notification", message)
+
+            send_email(email, "🌍 Disaster Alert Notification", message)
 
             # Mark as sent
+            if "alerts_sent" not in st.session_state:
+                st.session_state.alerts_sent = {}
             st.session_state.alerts_sent[key] = True
-            return True
+            return True  # Sent now
 
     st.write("❌ No matching disasters for this subscriber.")
-    return False
+    return False  # No match found
+
 
 
 
