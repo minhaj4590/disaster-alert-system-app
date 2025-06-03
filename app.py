@@ -16,6 +16,33 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import json
 
+if "alerts_sent" not in st.session_state:
+    st.session_state.alerts_sent = {}
+
+def send_alert_to_subscriber(sub, todays_disasters):
+    email = sub['email']
+    # Check if alert already sent today to this email
+    if st.session_state.alerts_sent.get(email) == today:
+        return False  # Already sent today
+
+    preferred_list = [a.strip().lower() for a in str(sub['preferred_alerts']).split(',')]
+    for _, dis in todays_disasters.iterrows():
+        if (sub['country'].strip().lower() == dis['country'].strip().lower() and
+            dis['event_type'].strip().lower() in preferred_list):
+            
+            message = f"""
+            Hello {sub['name']},
+            ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
+            Population exposed: {dis.get('population_exposed', 'Unknown')}
+
+            Stay safe.
+            - Disaster Alert System
+            """
+            send_email(email, "🌍 Disaster Alert Notification", message)
+            st.session_state.alerts_sent[email] = today
+            return True
+    return False
+
 # Initialize Firebase only once
 if not firebase_admin._apps:
     cred = credentials.Certificate({
@@ -597,6 +624,11 @@ if tabs == "Subscribe":
                         }
                         append_to_github_csv(new_data)
                         st.success("Subscription data saved to GitHub successfully!")
+                        sent_now = send_alert_to_subscriber(new_data, todays_disasters)
+                        if sent_now:
+                            st.info("⚠️ Alert email sent to you for today's disaster event(s).")
+                        else:
+                            st.info("You are subscribed successfully, no new alerts to send at this moment.")
                     else:
                         if not df[(df['email'] == email)].empty:
                             st.error("A user is already subscribed with this email address.")
@@ -673,50 +705,27 @@ def send_email(to_email, subject, body):
 
 # Get today’s date as a pure date object (no time)
 today = datetime.now().date()
-match_sub = []
-if "alert_sent_date" not in st.session_state or st.session_state.alert_sent_date != today:
-    # Make sure your `df` is defined and loaded before this
-    df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
-    todays_disasters = df[
-        (df['from_date'].dt.date == today) &
-        (df['event_type'].notna()) &
-        (df['country'].notna())
-    ]
 
-    # Load subscribers from GitHub
-    g = Github(TOKEN)
-    repo = g.get_repo("minhaj4590/disaster-forecasting")
-    contents = repo.get_contents("subscribers.csv")
-    csv_data = contents.decoded_content.decode()
-    subs_df = pd.read_csv(StringIO(csv_data))
+# Load disasters and subscribers as before
+df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
+todays_disasters = df[(df['from_date'].dt.date == today) & (df['event_type'].notna()) & (df['country'].notna())]
 
-    for _, sub in subs_df.iterrows():
-        preferred_list = [a.strip().lower() for a in str(sub['preferred_alerts']).split(',')]
-        for _, dis in todays_disasters.iterrows():
-            if ((sub['country'].strip().lower() == dis['country'].strip().lower()) and
-                (dis['event_type'].strip().lower() in preferred_list)):
-                message = f"""
-                          Hello {sub['name']},
-                          ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
-                          Population exposed: {dis.get('population_exposed', 'Unknown')}
+g = Github(TOKEN)
+repo = g.get_repo(REPO)
+contents = repo.get_contents(FILE_PATH)
+csv_data = contents.decoded_content.decode()
+subs_df = pd.read_csv(StringIO(csv_data))
 
-                          Stay safe.
-                          - Disaster Alert System
-                          """
-                match_sub.append({
-                    'phone': sub['phone'],
-                    'email': sub['email'],
-                    'message': message
-                })
+alerts_sent_count = 0
+for _, sub in subs_df.iterrows():
+    if send_alert_to_subscriber(sub, todays_disasters):
+        alerts_sent_count += 1
 
-    for match in match_sub:
-        send_email(match['email'], "🌍 Disaster Alert Notification", match['message'])
-
-    # Store alert_sent_date as a pure date object
-    st.session_state.alert_sent_date = today
-    st.success("✅ Alert emails sent successfully!")
+if alerts_sent_count > 0:
+    st.success(f"✅ Alert emails sent to {alerts_sent_count} subscribers!")
 else:
-    st.info("✅ Alerts already sent today.")
+    st.info("✅ No new alerts to send or all subscribers already notified today.")
+
 
 
 
