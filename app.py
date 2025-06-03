@@ -560,17 +560,19 @@ def is_valid_phone(phone):
 
 # ---- Inside your Subscribe tab form ----
 if tabs == "Subscribe":
-    st.title("📬 Subscribe to Alerts")
+    st.title("📬 Subscribe or Unsubscribe to Alerts")
+    
+    # --- Subscribe Form ---
+    st.subheader("Subscribe to Alerts")
     with st.form("subscribe_form"):
         name = st.text_input("Name")
         phone = st.text_input("Phone Number")
         email = st.text_input("Email")
         country = st.text_input("Country")
         preferred_alerts = st.multiselect("Preferred Alerts", df["event_type"].unique())
-        submitted = st.form_submit_button("Subscribe")
+        submitted_sub = st.form_submit_button("Subscribe")
         
-        if submitted:
-            # Check for blank fields
+        if submitted_sub:
             if not name or not phone or not email or not country or not preferred_alerts:
                 st.error("All fields must be filled!")
             elif not is_valid_email(email):
@@ -578,14 +580,13 @@ if tabs == "Subscribe":
             elif not is_valid_phone(phone):
                 st.error("Please enter a valid phone number.")
             else:
-                # Check if email or phone already exists
-                g = Github(TOKEN)  # Re-instantiate Github to access repo
-                repo = g.get_repo(REPO)  # Define repo here
+                g = Github(TOKEN)
+                repo = g.get_repo(REPO)
                 try:
                     contents = repo.get_contents(FILE_PATH)
                     csv_str = contents.decoded_content.decode()
                     df = pd.read_csv(StringIO(csv_str))
-                    
+    
                     if df[(df['email'] == email)].empty and df[(df['phone'] == phone)].empty:
                         new_data = {
                             "name": name,
@@ -603,6 +604,49 @@ if tabs == "Subscribe":
                             st.error("This phone number is already registered for alerts.")
                 except Exception as e:
                     st.error("Error accessing subscriber data.")
+
+
+    st.markdown("---")  # Divider line
+
+
+    # --- Unsubscribe Form ---
+    st.subheader("Unsubscribe from Alerts")
+    with st.form("unsubscribe_form"):
+        email_or_phone = st.text_input("Enter your Email or Phone Number to unsubscribe")
+        submitted_unsub = st.form_submit_button("Unsubscribe")
+    
+        if submitted_unsub:
+            if not email_or_phone:
+                st.error("Please enter an email or phone number.")
+            else:
+                g = Github(TOKEN)
+                repo = g.get_repo(REPO)
+                try:
+                    contents = repo.get_contents(FILE_PATH)
+                    csv_str = contents.decoded_content.decode()
+                    df = pd.read_csv(StringIO(csv_str))
+    
+                    query = email_or_phone.strip().lower()
+                    is_email = is_valid_email(query)
+                    is_phone = is_valid_phone(query)
+    
+                    if not is_email and not is_phone:
+                        st.error("Please enter a valid email or phone number.")
+                    else:
+                        if is_email:
+                            filtered_df = df[df['email'].str.lower() != query]
+                        else:
+                            filtered_df = df[df['phone'].str.lower() != query]
+    
+                        if len(filtered_df) == len(df):
+                            st.info("No subscription found with this email or phone number.")
+                        else:
+                            updated_csv = filtered_df.to_csv(index=False)
+                            repo.update_file(contents.path, "Unsubscribe user", updated_csv, contents.sha)
+                            st.success("You have been unsubscribed successfully!")
+                except Exception as e:
+                    st.error("Error accessing subscriber data or updating file.")
+
 
 
 # sending alerts to subscribers
