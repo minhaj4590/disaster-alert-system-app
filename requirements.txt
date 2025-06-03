@@ -10,3 +10,4 @@ firebase-admin
 PyGithub
 twilio
 google.generativeai
+streamlit_autorefresh
