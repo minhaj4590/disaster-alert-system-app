@@ -24,6 +24,46 @@ from streamlit_autorefresh import st_autorefresh
 import smtplib
 from email.message import EmailMessage
 
+# -------------- Page Config & Logo --------------
+st.set_page_config(page_title="🌍 Disaster Alert System", layout="wide", initial_sidebar_state="collapsed")
+
+st.markdown("""
+<style>
+body {
+    background: linear-gradient(-45deg, #1e3c72, #2a5298, #0f2027, #2c5364);
+    background-size: 600% 600%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+}
+@keyframes gradientBG {
+    0% { background-position: 0% 50% }
+    50% { background-position: 100% 50% }
+    100% { background-position: 0% 50% }
+}
+.css-1d391kg {background: rgba(255,255,255,0.05) !important; border-radius: 15px;}
+[data-testid="stSidebar"] {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-testid="collapsedControl"] {
+    visibility: visible;
+}
+h1, h2, h3, h4 {
+    color: #ffffff;
+}
+.logo {
+    font-size: 36px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: -40px;
+    margin-bottom: 20px;
+    color: white;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="logo">🌍 Disaster Alert System ®</div>', unsafe_allow_html=True)
 # Auto-refresh every hour (3600 * 1000 ms)
 st_autorefresh(interval=3600 * 1000, key="alert_refresh")
 
@@ -99,46 +139,7 @@ if not firebase_admin._apps:
 
 
 
-# -------------- Page Config & Logo --------------
-st.set_page_config(page_title="🌍 Disaster Alert System", layout="wide", initial_sidebar_state="collapsed")
 
-st.markdown("""
-<style>
-body {
-    background: linear-gradient(-45deg, #1e3c72, #2a5298, #0f2027, #2c5364);
-    background-size: 600% 600%;
-    animation: gradientBG 15s ease infinite;
-    color: white;
-}
-@keyframes gradientBG {
-    0% { background-position: 0% 50% }
-    50% { background-position: 100% 50% }
-    100% { background-position: 0% 50% }
-}
-.css-1d391kg {background: rgba(255,255,255,0.05) !important; border-radius: 15px;}
-[data-testid="stSidebar"] {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(15px);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-[data-testid="collapsedControl"] {
-    visibility: visible;
-}
-h1, h2, h3, h4 {
-    color: #ffffff;
-}
-.logo {
-    font-size: 36px;
-    font-weight: 700;
-    text-align: center;
-    margin-top: -40px;
-    margin-bottom: 20px;
-    color: white;
-}
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown('<div class="logo">🌍 Disaster Alert System ®</div>', unsafe_allow_html=True)
 
 # -------------- Dummy Data --------------
 # np.random.seed(42)
