@@ -10,12 +10,56 @@ from streamlit_option_menu import option_menu
 import folium
 from streamlit_folium import st_folium
 
-
 # innit firebase
+
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
 
+# sending alerts to subscribers
+
+from datetime import datetime
+from streamlit_autorefresh import st_autorefresh
+
+import smtplib
+from email.message import EmailMessage
+
+# Auto-refresh every hour (3600 * 1000 ms)
+st_autorefresh(interval=3600 * 1000, key="alert_refresh")
+
+def send_email(to_email, subject, body):
+    msg = EmailMessage()
+    msg['Subject'] = subject
+    msg['From'] = "disaster.alerts.app@gmail.com"
+    msg['To'] = to_email
+    msg.set_content(body)
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        smtp.login("fahadgillani08@gmail.com", "nqgz nnii bpwr qavf")  # Use App Password
+        smtp.send_message(msg)
+
+# Get today’s date as a pure date object (no time)
+today = datetime.now().date()
+
+# Load disasters and subscribers as before
+df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
+todays_disasters = df[(df['from_date'].dt.date == today) & (df['event_type'].notna()) & (df['country'].notna())]
+
+g = Github(TOKEN)
+repo = g.get_repo(REPO)
+contents = repo.get_contents(FILE_PATH)
+csv_data = contents.decoded_content.decode()
+subs_df = pd.read_csv(StringIO(csv_data))
+
+alerts_sent_count = 0
+for _, sub in subs_df.iterrows():
+    if send_alert_to_subscriber(sub, todays_disasters):
+        alerts_sent_count += 1
+
+if alerts_sent_count > 0:
+    st.success(f"✅ Alert emails sent to {alerts_sent_count} subscribers!")
+else:
+    st.info("✅ No new alerts to send or all subscribers already notified today.")
 if "alerts_sent" not in st.session_state:
     st.session_state.alerts_sent = {}
 
@@ -701,55 +745,6 @@ if tabs == "Subscribe":
                             st.success("You have been unsubscribed successfully!")
                 except Exception as e:
                     st.error("Error accessing subscriber data or updating file.")
-
-
-
-# sending alerts to subscribers
-
-from datetime import datetime
-from streamlit_autorefresh import st_autorefresh
-
-import smtplib
-from email.message import EmailMessage
-
-# Auto-refresh every hour (3600 * 1000 ms)
-st_autorefresh(interval=3600 * 1000, key="alert_refresh")
-
-def send_email(to_email, subject, body):
-    msg = EmailMessage()
-    msg['Subject'] = subject
-    msg['From'] = "disaster.alerts.app@gmail.com"
-    msg['To'] = to_email
-    msg.set_content(body)
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login("fahadgillani08@gmail.com", "nqgz nnii bpwr qavf")  # Use App Password
-        smtp.send_message(msg)
-
-# Get today’s date as a pure date object (no time)
-today = datetime.now().date()
-
-# Load disasters and subscribers as before
-df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
-todays_disasters = df[(df['from_date'].dt.date == today) & (df['event_type'].notna()) & (df['country'].notna())]
-
-g = Github(TOKEN)
-repo = g.get_repo(REPO)
-contents = repo.get_contents(FILE_PATH)
-csv_data = contents.decoded_content.decode()
-subs_df = pd.read_csv(StringIO(csv_data))
-
-alerts_sent_count = 0
-for _, sub in subs_df.iterrows():
-    if send_alert_to_subscriber(sub, todays_disasters):
-        alerts_sent_count += 1
-
-if alerts_sent_count > 0:
-    st.success(f"✅ Alert emails sent to {alerts_sent_count} subscribers!")
-else:
-    st.info("✅ No new alerts to send or all subscribers already notified today.")
-
-
 
 
 
