@@ -627,55 +627,48 @@ def send_email(to_email, subject, body):
         smtp.login("disaster.alerts.app@gmail.com", "asvv aauj erqs bvoi")  # Use App Password
         smtp.send_message(msg)
 
-# Ensure df and TOKEN are defined before this point
-
-today = pd.to_datetime(datetime.now().date())
+# Get today’s date as a pure date object (no time)
+today = datetime.now().date()
 match_sub = []
-st.write("Alert sent date in session:", st.session_state.alert_sent_date)
-st.write("Today's date:", today)
-# Ensure key exists in session_state
-if "alert_sent_date" not in st.session_state:
-    st.session_state.alert_sent_date = None
-
-if st.session_state.alert_sent_date != today:
+if "alert_sent_date" not in st.session_state or st.session_state.alert_sent_date != today:
+    # Make sure your `df` is defined and loaded before this
     df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
     todays_disasters = df[
-        (df['from_date'].dt.date == today.date()) &
+        (df['from_date'].dt.date == today) &
         (df['event_type'].notna()) &
         (df['country'].notna())
     ]
 
-    # GitHub setup
+    # Load subscribers from GitHub
     g = Github(TOKEN)
     repo = g.get_repo("minhaj4590/disaster-forecasting")
     contents = repo.get_contents("subscribers.csv")
     csv_data = contents.decoded_content.decode()
     subs_df = pd.read_csv(StringIO(csv_data))
 
-    # Matching subscribers
     for _, sub in subs_df.iterrows():
         preferred_list = [a.strip().lower() for a in str(sub['preferred_alerts']).split(',')]
         for _, dis in todays_disasters.iterrows():
-            if ((sub['country'].strip().lower() == dis['country'].strip().lower()) and 
+            if ((sub['country'].strip().lower() == dis['country'].strip().lower()) and
                 (dis['event_type'].strip().lower() in preferred_list)):
-                
                 message = f"""
-                Hello {sub['name']},
-                ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
-                Population exposed: {dis.get('population_exposed', 'Unknown')}
+                          Hello {sub['name']},
+                          ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
+                          Population exposed: {dis.get('population_exposed', 'Unknown')}
 
-                Stay safe.
-                - Disaster Alert System
-                """
-                matche_sub.append({
+                          Stay safe.
+                          - Disaster Alert System
+                          """
+                match_sub.append({
                     'phone': sub['phone'],
                     'email': sub['email'],
                     'message': message
                 })
 
-    for match in match_sub:
+    for match in matches:
         send_email(match['email'], "🌍 Disaster Alert Notification", match['message'])
 
+    # Store alert_sent_date as a pure date object
     st.session_state.alert_sent_date = today
     st.success("✅ Alert emails sent successfully!")
 else:
