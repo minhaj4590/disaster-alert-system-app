@@ -83,14 +83,14 @@ def send_email(to_email, subject, body):
         print(f"Failed to send email: {e}")
 
 def send_alert_to_subscriber(subscriber, todays_disasters, today):
-    preferred_list = [a.strip().lower() for a in subscriber['preferred_alerts'].split(',')]
+    preferred_list = [a.strip() for a in subscriber['preferred_alerts'].split(',')]
     st.write(f"Subscriber country: {subscriber['country'].strip().lower()}")
     st.write(f"Subscriber preferred alerts: {preferred_list}")
     st.write(f"Number of disasters today: {len(todays_disasters)}")
     for _, dis in todays_disasters.iterrows():
         if (
-            subscriber['country'].strip().lower() == dis['country'].strip().lower() and
-            dis['event_type'].strip().lower() in preferred_list
+            subscriber['country'].strip() == dis['country'].strip() and
+            dis['event_type'].strip() in preferred_list
         ):
             st.write("Match found, sending email to", subscriber['email'])
             email = subscriber['email']
