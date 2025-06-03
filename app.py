@@ -588,7 +588,7 @@ def is_valid_phone(phone):
 # ---- Inside your Subscribe tab form ----
 if tabs == "Subscribe":
     st.title("📬 Subscribe or Unsubscribe to Alerts")
-    
+
     # --- Subscribe Form ---
     st.subheader("Subscribe to Alerts")
     with st.form("subscribe_form"):
@@ -598,44 +598,59 @@ if tabs == "Subscribe":
         country = st.text_input("Country")
         preferred_alerts = st.multiselect("Preferred Alerts", df["event_type"].unique())
         submitted_sub = st.form_submit_button("Subscribe")
-        
-        if submitted_sub:
-            if not name or not phone or not email or not country or not preferred_alerts:
-                st.error("All fields must be filled!")
-            elif not is_valid_email(email):
-                st.error("Please enter a valid email address.")
-            elif not is_valid_phone(phone):
-                st.error("Please enter a valid phone number.")
-            else:
+
+    if submitted_sub:
+        if not name or not phone or not email or not country or not preferred_alerts:
+            st.error("All fields must be filled!")
+        elif not is_valid_email(email):
+            st.error("Please enter a valid email address.")
+        elif not is_valid_phone(phone):
+            st.error("Please enter a valid phone number.")
+        else:
+            try:
                 g = Github(TOKEN)
                 repo = g.get_repo(REPO)
-                try:
-                    contents = repo.get_contents(FILE_PATH)
-                    csv_str = contents.decoded_content.decode()
-                    df = pd.read_csv(StringIO(csv_str))
-    
-                    if df[(df['email'] == email)].empty and df[(df['phone'] == phone)].empty:
-                        new_data = {
-                            "name": name,
-                            "phone": phone,
-                            "email": email,
-                            "country": country,
-                            "preferred_alerts": ",".join(preferred_alerts)
-                        }
-                        append_to_github_csv(new_data)
-                        st.success("Subscription data saved to GitHub successfully!")
-                        sent_now = send_alert_to_subscriber(new_data, todays_disasters)
-                        if sent_now:
-                            st.info("⚠️ Alert email sent to you for today's disaster event(s).")
-                        else:
-                            st.info("You are subscribed successfully, no new alerts to send at this moment.")
-                    else:
-                        if not df[(df['email'] == email)].empty:
-                            st.error("A user is already subscribed with this email address.")
-                        if not df[(df['phone'] == phone)].empty:
-                            st.error("This phone number is already registered for alerts.")
-                except Exception as e:
-                    st.error("Error accessing subscriber data.")
+                contents = repo.get_contents(FILE_PATH)
+                csv_str = contents.decoded_content.decode()
+                subscribers_df = pd.read_csv(StringIO(csv_str))
+            except Exception:
+                subscribers_df = pd.DataFrame(columns=["name", "phone", "email", "country", "preferred_alerts"])
+
+            # Check for duplicates
+            duplicate_email = not subscribers_df[ subscribers_df['email'] == email ].empty
+            duplicate_phone = not subscribers_df[ subscribers_df['phone'] == phone ].empty
+
+            if duplicate_email:
+                st.error("A user is already subscribed with this email address.")
+            elif duplicate_phone:
+                st.error("This phone number is already registered for alerts.")
+            else:
+                new_data = {
+                    "name": name,
+                    "phone": phone,
+                    "email": email,
+                    "country": country,
+                    "preferred_alerts": ",".join(preferred_alerts)
+                }
+                append_to_github_csv(new_data)
+                st.success("Subscription data saved to GitHub successfully!")
+
+                # --- Send alert if today's disaster matches
+                today = datetime.now().date()
+                if 'from_date' in df.columns:
+                    df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
+                    todays_disasters = df[df['from_date'].dt.date == today]
+                else:
+                    todays_disasters = pd.DataFrame()
+
+                # Alert tracking
+                if "alerts_sent" not in st.session_state:
+                    st.session_state.alerts_sent = {}
+
+                if send_alert_to_subscriber(new_data, todays_disasters, today):
+                    st.info("⚠️ Alert email sent to you for today's disaster event(s).")
+                else:
+                    st.info("You are subscribed successfully, no new alerts to send at this moment.")
 
 
     st.markdown("---")  # Divider line
