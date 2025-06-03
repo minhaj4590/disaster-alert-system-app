@@ -210,6 +210,7 @@ def get_dummy_data():
             'title': 'Green alert for tropical cyclone ALVIN-25',
             'to_date': '2025-05-31 15:00:00'
         },
+        # Add 3–4 more records here as needed...
         {
             'alert_level': 'Orange',
             'country': 'India',
@@ -217,13 +218,13 @@ def get_dummy_data():
             'event_id': '2002456',
             'event_name': 'Bihar Floods',
             'event_type': 'FL',
-            'from_date': '2025-06-03 10:00:00',
+            'from_date': '2025-06-01 10:00:00',
             'iso3': 'IND',
             'latitude': 25.0961,
             'longitude': 85.3131,
             'link': 'https://www.gdacs.org/report.aspx?eventtype=FL&eventid=2002456',
             'population_exposed': '50000',
-            'pub_date': '2025-06-03 09:50:00',
+            'pub_date': '2025-06-01 09:50:00',
             'severity': 75.0,
             'title': 'Orange alert for floods in Bihar, India.',
             'to_date': '2025-06-05 18:00:00'
@@ -281,27 +282,8 @@ def get_dummy_data():
             'severity': 70.2,
             'title': 'Tornado alert for Oklahoma.',
             'to_date': '2025-06-02 00:00:00'
-        },
-        {
-            'alert_level': 'Red',
-            'country': 'Philippines',
-            'description': 'Typhoon warning issued in Manila region.',
-            'event_id': '6006789',
-            'event_name': 'Manila Typhoon',
-            'event_type': 'TC',
-            'from_date': '2025-06-02 18:00:00',
-            'iso3': 'PHL',
-            'latitude': 14.5995,
-            'longitude': 120.9842,
-            'link': 'https://www.gdacs.org/report.aspx?eventtype=TC&eventid=6006789',
-            'population_exposed': '80000',
-            'pub_date': '2025-06-02 17:45:00',
-            'severity': 90.1,
-            'title': 'Red alert: Typhoon hits Manila.',
-            'to_date': '2025-06-04 08:00:00'
         }
     ])
-
 
 @st.cache_data
 def fetch_data_safely():
@@ -711,7 +693,7 @@ if tabs == "Subscribe":
 
                 # --- Send alert if today's disaster matches
                 if 'from_date' in df.columns:
-                    today = pd.to_datetime("2025-06-03")
+                    today = pd.to_datetime("2025-06-01")
                     df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
                     todays_disasters = df[df['from_date'].dt.normalize() == today]
                     st.write(todays_disasters)
