@@ -19,29 +19,37 @@ import json
 if "alerts_sent" not in st.session_state:
     st.session_state.alerts_sent = {}
 
-def send_alert_to_subscriber(sub, todays_disasters):
-    email = sub['email']
-    # Check if alert already sent today to this email
-    if st.session_state.alerts_sent.get(email) == today:
-        return False  # Already sent today
-
-    preferred_list = [a.strip().lower() for a in str(sub['preferred_alerts']).split(',')]
+def send_alert_to_subscriber(subscriber, todays_disasters, today):
+    preferred_list = [a.strip().lower() for a in subscriber['preferred_alerts'].split(',')]
     for _, dis in todays_disasters.iterrows():
-        if (sub['country'].strip().lower() == dis['country'].strip().lower() and
-            dis['event_type'].strip().lower() in preferred_list):
+        if (
+            subscriber['country'].strip().lower() == dis['country'].strip().lower() and
+            dis['event_type'].strip().lower() in preferred_list
+        ):
+            email = subscriber['email']
             
+            # Use a unique key like email+date to track sent alerts
+            key = f"{email}_{today}"
+
+            if key in st.session_state.get("alerts_sent", {}):
+                return False  # Already sent today
+
             message = f"""
-            Hello {sub['name']},
+            Hello {subscriber['name']},
             ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
             Population exposed: {dis.get('population_exposed', 'Unknown')}
 
             Stay safe.
             - Disaster Alert System
             """
+
             send_email(email, "🌍 Disaster Alert Notification", message)
-            st.session_state.alerts_sent[email] = today
-            return True
-    return False
+
+            # Mark as sent
+            st.session_state.alerts_sent[key] = True
+            return True  # Sent now
+    return False  # No matching disasters
+
 
 # Initialize Firebase only once
 if not firebase_admin._apps:
