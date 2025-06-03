@@ -682,6 +682,7 @@ if tabs == "Subscribe":
                 # --- Send alert if today's disaster matches
                 if 'from_date' in df.columns:
                     today = pd.Timestamp(datetime.now().date())
+                    st.write(today)
                     df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
                     todays_disasters = df[df['from_date'].dt.normalize() == today]
                 else:
