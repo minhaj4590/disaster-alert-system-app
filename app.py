@@ -610,6 +610,7 @@ if tabs == "Subscribe":
 from datetime import datetime
 
 # Filter disasters for today
+df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
 today = pd.to_datetime(datetime.now().date())
 todays_disasters = df[
     (df['from_date'].dt.date == today.date()) &
@@ -632,17 +633,17 @@ subs_df = pd.read_csv(StringIO(csv_data))
 matches = []
 
 for _, sub in subs_df.iterrows():
+    preferred_list = [a.strip().lower() for a in str(sub['preferred_alerts']).split(',')]
     for _, dis in todays_disasters.iterrows():
-        if sub['country'].strip().lower() == dis['country'].strip().lower() and \
-           sub['preferred_alerts'].strip().lower() in dis['event_type'].strip().lower():
+        if ((sub['country'].strip().lower() == dis['country'].strip().lower()) and (dis['event_type'].strip().lower() in preferred_list)):
             message = f"""
-Hello {sub['name']},
-⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
-Population exposed: {dis.get('population_exposed', 'Unknown')}
+                      Hello {sub['name']},
+                      ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
+                      Population exposed: {dis.get('population_exposed', 'Unknown')}
 
-Stay safe.
-- Disaster Alert System
-"""
+                      Stay safe.
+                      - Disaster Alert System
+                      """
             matches.append({
                 'phone': sub['phone'],
                 'email': sub['email'],
@@ -662,10 +663,12 @@ def send_email(to_email, subject, body):
     msg.set_content(body)
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login("disaster.alerts.app@gmail.com", "asvvaaujerqsbvoi")  # Use App Password
+        smtp.login("disaster.alerts.app@gmail.com", "asvv aauj erqs bvoi")  # Use App Password
         smtp.send_message(msg)
 
-
+for match in matches:
+    send_email(match['email'], "🌍 Disaster Alert Notification", match['message'])
+    
 from twilio.rest import Client
 
 def send_whatsapp(to_number, body):
