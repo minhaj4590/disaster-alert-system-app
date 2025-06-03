@@ -68,16 +68,19 @@ st.markdown('<div class="logo">🌍 Disaster Alert System ®</div>', unsafe_allo
 st_autorefresh(interval=3600 * 1000, key="alert_refresh")
 
 def send_email(to_email, subject, body):
+    print(f"Trying to send email to {to_email} with subject: {subject}")
     msg = EmailMessage()
     msg['Subject'] = subject
     msg['From'] = "disaster.alerts.app@gmail.com"
     msg['To'] = to_email
     msg.set_content(body)
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login("fahadgillani08@gmail.com", "nqgz nnii bpwr qavf")  # Use App Password
-        smtp.send_message(msg)
-
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login("fahadgillani08@gmail.com", "nqgz nnii bpwr qavf")
+            smtp.send_message(msg)
+        print("Email sent successfully!")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
 
 def send_alert_to_subscriber(subscriber, todays_disasters, today):
     preferred_list = [a.strip().lower() for a in subscriber['preferred_alerts'].split(',')]
