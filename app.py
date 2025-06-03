@@ -87,10 +87,6 @@ def send_alert_to_subscriber(subscriber, todays_disasters, today):
     subscriber_country = str(subscriber['country']).strip().lower()
     preferred_list = [a.strip().upper() for a in subscriber['preferred_alerts'].split(',')]
 
-    st.write(f"✅ Normalized Subscriber Country: {subscriber_country}")
-    st.write(f"✅ Normalized Subscriber Preferred Alerts: {preferred_list}")
-    st.write(f"📊 Number of disasters today: {len(todays_disasters)}")
-
     for _, dis in todays_disasters.iterrows():
         # Normalize disaster data
         disaster_country = str(dis['country']).strip().lower()
@@ -101,7 +97,7 @@ def send_alert_to_subscriber(subscriber, todays_disasters, today):
                  f"disaster_type={disaster_type} in preferred_list={preferred_list}")
 
         if subscriber_country == disaster_country and disaster_type in preferred_list:
-            st.write("✅ Match found, sending email to", subscriber['email'])
+            st.write("✅ Match found,sending email to", subscriber['email'])
             email = subscriber['email']
 
             # Unique key to avoid duplicate emails per day
