@@ -630,7 +630,7 @@ def send_email(to_email, subject, body):
 # Ensure df and TOKEN are defined before this point
 
 today = pd.to_datetime(datetime.now().date())
-
+match_sub = []
 # Ensure key exists in session_state
 if "alert_sent_date" not in st.session_state:
     st.session_state.alert_sent_date = None
@@ -651,7 +651,6 @@ if st.session_state.alert_sent_date != today:
     subs_df = pd.read_csv(StringIO(csv_data))
 
     # Matching subscribers
-    matches = []
     for _, sub in subs_df.iterrows():
         preferred_list = [a.strip().lower() for a in str(sub['preferred_alerts']).split(',')]
         for _, dis in todays_disasters.iterrows():
@@ -666,13 +665,13 @@ if st.session_state.alert_sent_date != today:
                 Stay safe.
                 - Disaster Alert System
                 """
-                matches.append({
+                matche_sub.append({
                     'phone': sub['phone'],
                     'email': sub['email'],
                     'message': message
                 })
 
-    for match in matches:
+    for match in matche_sub:
         send_email(match['email'], "🌍 Disaster Alert Notification", match['message'])
 
     st.session_state.alert_sent_date = today
