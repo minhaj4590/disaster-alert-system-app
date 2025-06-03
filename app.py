@@ -253,7 +253,7 @@ def get_dummy_data():
             'event_id': '4004890',
             'event_name': 'CA Wildfire',
             'event_type': 'WF',
-            'from_date': '2025-06-02 14:00:00',
+            'from_date': '2025-06-03 14:00:00',
             'iso3': 'USA',
             'latitude': 36.7783,
             'longitude': -119.4179,
@@ -695,6 +695,7 @@ if tabs == "Subscribe":
                 if 'from_date' in df.columns:
                     df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
                     todays_disasters = df[df['from_date'].dt.date == today]
+                    st.write(todays_disasters)
                 else:
                     todays_disasters = pd.DataFrame()
 
