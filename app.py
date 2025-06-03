@@ -38,30 +38,6 @@ def send_email(to_email, subject, body):
         smtp.login("fahadgillani08@gmail.com", "nqgz nnii bpwr qavf")  # Use App Password
         smtp.send_message(msg)
 
-# Get today’s date as a pure date object (no time)
-today = datetime.now().date()
-
-# Load disasters and subscribers as before
-df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
-todays_disasters = df[(df['from_date'].dt.date == today) & (df['event_type'].notna()) & (df['country'].notna())]
-
-g = Github(TOKEN)
-repo = g.get_repo(REPO)
-contents = repo.get_contents(FILE_PATH)
-csv_data = contents.decoded_content.decode()
-subs_df = pd.read_csv(StringIO(csv_data))
-
-alerts_sent_count = 0
-for _, sub in subs_df.iterrows():
-    if send_alert_to_subscriber(sub, todays_disasters):
-        alerts_sent_count += 1
-
-if alerts_sent_count > 0:
-    st.success(f"✅ Alert emails sent to {alerts_sent_count} subscribers!")
-else:
-    st.info("✅ No new alerts to send or all subscribers already notified today.")
-if "alerts_sent" not in st.session_state:
-    st.session_state.alerts_sent = {}
 
 def send_alert_to_subscriber(subscriber, todays_disasters, today):
     preferred_list = [a.strip().lower() for a in subscriber['preferred_alerts'].split(',')]
