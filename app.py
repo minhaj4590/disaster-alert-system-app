@@ -731,18 +731,11 @@ if tabs == "Subscribe":
 
 
 
-# -------------- Footer --------------
-st.markdown("---")
-st.write("© 2023 Disaster Alert System ®. All rights reserved.")
-
-
 # -------------- AlertBot Tab --------------
 import time
 import google.generativeai as genai
 
 if tabs == "AlertBot":
-
-    st.title("AlertBot - Disaster Assistant")
     
     gemini_key = st.secrets["GEMINI_KEY"]
     genai.configure(api_key=gemini_key)
