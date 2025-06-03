@@ -665,7 +665,7 @@ if "alert_sent_date" not in st.session_state or st.session_state.alert_sent_date
                     'message': message
                 })
 
-    for match in matches:
+    for match in match_sub:
         send_email(match['email'], "🌍 Disaster Alert Notification", match['message'])
 
     # Store alert_sent_date as a pure date object
