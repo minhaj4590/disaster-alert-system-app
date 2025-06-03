@@ -671,7 +671,7 @@ if st.session_state.alert_sent_date != today:
                     'message': message
                 })
 
-    for match in matche_sub:
+    for match in match_sub:
         send_email(match['email'], "🌍 Disaster Alert Notification", match['message'])
 
     st.session_state.alert_sent_date = today
