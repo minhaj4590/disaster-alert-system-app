@@ -705,13 +705,13 @@ if tabs == "Subscribe":
                         (df['to_date'] >= today)
                     ]
 
-                if not todays_disasters.empty:
-                    st.write(todays_disasters)
+                    if not todays_disasters.empty:
+                        st.write(todays_disasters)
+                    else:
+                        st.write("ℹ️ No disasters active today.")
                 else:
-                    st.write("ℹ️ No disasters active today.")
-else:
-    todays_disasters = pd.DataFrame()
-    st.write("⚠️ 'from_date' or 'to_date' column is missing from the dataframe.")
+                    todays_disasters = pd.DataFrame()
+                    st.write("⚠️ 'from_date' or 'to_date' column is missing from the dataframe.")
 
 
                 # Alert tracking
