@@ -692,14 +692,27 @@ if tabs == "Subscribe":
                 st.success("Subscription data saved to GitHub successfully!")
 
                 # --- Send alert if today's disaster matches
-                if 'from_date' in df.columns:
+                if 'from_date' in df.columns and 'to_date' in df.columns:
                     today = pd.to_datetime("2025-06-03")
+                
+                    # Convert from_date and to_date columns to datetime
                     df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
-                    todays_disasters = df[df['from_date'].dt.normalize() == today]
+                    df['to_date'] = pd.to_datetime(df['to_date'], errors='coerce')
+                
+                    # Filter disasters that are active today
+                    todays_disasters = df[
+                        (df['from_date'] <= today) & 
+                        (df['to_date'] >= today)
+                    ]
+
+                if not todays_disasters.empty:
                     st.write(todays_disasters)
                 else:
-                    todays_disasters = pd.DataFrame()
-                    st.write("⚠️ No 'from_date' column in the dataframe.")
+                    st.write("ℹ️ No disasters active today.")
+else:
+    todays_disasters = pd.DataFrame()
+    st.write("⚠️ 'from_date' or 'to_date' column is missing from the dataframe.")
+
 
                 # Alert tracking
                 if "alerts_sent" not in st.session_state:
