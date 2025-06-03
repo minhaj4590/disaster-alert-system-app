@@ -83,19 +83,22 @@ def send_email(to_email, subject, body):
         print(f"Failed to send email: {e}")
 
 def send_alert_to_subscriber(subscriber, todays_disasters, today):
-    preferred_list = [a.strip() for a in subscriber['preferred_alerts'].split(',')]
-    st.write(f"Subscriber country: {subscriber['country'].strip().lower()}")
+    # Normalize preferred alerts list to lowercase and strip spaces
+    preferred_list = [a.strip().lower() for a in subscriber['preferred_alerts'].split(',')]
+    subscriber_country = subscriber['country'].strip().lower()
+
+    st.write(f"Subscriber country: {subscriber_country}")
     st.write(f"Subscriber preferred alerts: {preferred_list}")
     st.write(f"Number of disasters today: {len(todays_disasters)}")
+
     for _, dis in todays_disasters.iterrows():
-        if (
-            subscriber['country'].strip() == dis['country'].strip() and
-            dis['event_type'].strip() in preferred_list
-        ):
+        disaster_country = dis['country'].strip().lower()
+        disaster_event = dis['event_type'].strip().lower()
+
+        if subscriber_country == disaster_country and disaster_event in preferred_list:
             st.write("Match found, sending email to", subscriber['email'])
             email = subscriber['email']
-            
-            # Use a unique key like email+date to track sent alerts
+
             key = f"{email}_{today}"
 
             if key in st.session_state.get("alerts_sent", {}):
@@ -103,7 +106,7 @@ def send_alert_to_subscriber(subscriber, todays_disasters, today):
 
             message = f"""
             Hello {subscriber['name']},
-            ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
+            ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {pd.to_datetime(dis['from_date']).date()}.
             Population exposed: {dis.get('population_exposed', 'Unknown')}
 
             Stay safe.
@@ -112,10 +115,11 @@ def send_alert_to_subscriber(subscriber, todays_disasters, today):
 
             send_email(email, "🌍 Disaster Alert Notification", message)
 
-            # Mark as sent
             st.session_state.alerts_sent[key] = True
             return True  # Sent now
+
     return False  # No matching disasters
+
 
 
 # Initialize Firebase only once
