@@ -681,26 +681,6 @@ else:
 
 
 
-     
-from twilio.rest import Client
-
-def send_whatsapp(to_number, body):
-    account_sid = "AC6d28d5c70483dc090932c503950ce03f"
-    auth_token = "c029840eabab6bf83f6eee23924d9669"
-    client = Client(account_sid, auth_token)
-
-    client.messages.create(
-        body=body,
-        from_='whatsapp:+14155238886',  # Twilio Sandbox WhatsApp number
-        to=f'whatsapp:{to_number}'
-    )
-
-
-# Send alerts to matched subscribers
-for match in matches:
-    send_email(match['email'], "Disaster Alert", match['message'])
-    send_whatsapp(match['phone'], match['message'])
-
 
 # -------------- Footer --------------
 st.markdown("---")
