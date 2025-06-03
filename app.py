@@ -608,52 +608,15 @@ if tabs == "Subscribe":
 # sending alerts to subscribers
 
 from datetime import datetime
-
-# Filter disasters for today
-df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
-today = pd.to_datetime(datetime.now().date())
-todays_disasters = df[
-    (df['from_date'].dt.date == today.date()) &
-    (df['event_type'].notna()) &
-    (df['country'].notna())
-]
-
-
-# load subscribers from GitHub
-
-# GitHub setup
-g = Github(TOKEN)
-repo = g.get_repo("minhaj4590/disaster-forecasting")
-contents = repo.get_contents("subscribers.csv")
-csv_data = contents.decoded_content.decode()
-subs_df = pd.read_csv(StringIO(csv_data))
-
-
-# Matching subscribers with today's disasters
-matches = []
-
-for _, sub in subs_df.iterrows():
-    preferred_list = [a.strip().lower() for a in str(sub['preferred_alerts']).split(',')]
-    for _, dis in todays_disasters.iterrows():
-        if ((sub['country'].strip().lower() == dis['country'].strip().lower()) and (dis['event_type'].strip().lower() in preferred_list)):
-            message = f"""
-                      Hello {sub['name']},
-                      ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
-                      Population exposed: {dis.get('population_exposed', 'Unknown')}
-
-                      Stay safe.
-                      - Disaster Alert System
-                      """
-            matches.append({
-                'phone': sub['phone'],
-                'email': sub['email'],
-                'message': message
-            })
-
+from streamlit_autorefresh import st_autorefresh
 
 # Sending alerts via email
+
 import smtplib
 from email.message import EmailMessage
+
+# Auto-refresh every hour (3600 * 1000 ms)
+st_autorefresh(interval=3600 * 1000, key="alert_refresh")
 
 def send_email(to_email, subject, body):
     msg = EmailMessage()
@@ -665,10 +628,59 @@ def send_email(to_email, subject, body):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login("disaster.alerts.app@gmail.com", "asvv aauj erqs bvoi")  # Use App Password
         smtp.send_message(msg)
+        
+# Filter disasters for today
+today = pd.to_datetime(datetime.now().date())
 
-for match in matches:
-    send_email(match['email'], "🌍 Disaster Alert Notification", match['message'])
+if "alert_sent_date" not in st.session_state or st.session_state.alert_sent_date != today:
     
+    df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
+    todays_disasters = df[
+        (df['from_date'].dt.date == today.date()) &
+        (df['event_type'].notna()) &
+        (df['country'].notna())
+    ]
+
+
+    # load subscribers from GitHub
+    
+    # GitHub setup
+    g = Github(TOKEN)
+    repo = g.get_repo("minhaj4590/disaster-forecasting")
+    contents = repo.get_contents("subscribers.csv")
+    csv_data = contents.decoded_content.decode()
+    subs_df = pd.read_csv(StringIO(csv_data))
+
+
+    # Matching subscribers with today's disasters
+    matches = []
+    
+    for _, sub in subs_df.iterrows():
+        preferred_list = [a.strip().lower() for a in str(sub['preferred_alerts']).split(',')]
+        for _, dis in todays_disasters.iterrows():
+            if ((sub['country'].strip().lower() == dis['country'].strip().lower()) and (dis['event_type'].strip().lower() in preferred_list)):
+                message = f"""
+                          Hello {sub['name']},
+                          ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'].date()}.
+                          Population exposed: {dis.get('population_exposed', 'Unknown')}
+    
+                          Stay safe.
+                          - Disaster Alert System
+                          """
+                matches.append({
+                    'phone': sub['phone'],
+                    'email': sub['email'],
+                    'message': message
+                })
+    for match in matches:
+        send_email(match['email'], "🌍 Disaster Alert Notification", match['message'])
+    st.session_state.alert_sent_date = today
+    st.success("✅ Alert emails sent successfully!")
+else:
+    st.info("✅ Alerts already sent today.")
+
+
+     
 from twilio.rest import Client
 
 def send_whatsapp(to_number, body):
