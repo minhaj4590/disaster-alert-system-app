@@ -624,7 +624,7 @@ def send_email(to_email, subject, body):
     msg.set_content(body)
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login("disaster.alerts.app@gmail.com", "asvv aauj erqs bvoi")  # Use App Password
+        smtp.login("fahadgillani08@gmail.com", "nqgz nnii bpwr qavf")  # Use App Password
         smtp.send_message(msg)
 
 # Get today’s date as a pure date object (no time)
