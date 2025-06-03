@@ -210,7 +210,6 @@ def get_dummy_data():
             'title': 'Green alert for tropical cyclone ALVIN-25',
             'to_date': '2025-05-31 15:00:00'
         },
-        # Add 3–4 more records here as needed...
         {
             'alert_level': 'Orange',
             'country': 'India',
@@ -282,8 +281,27 @@ def get_dummy_data():
             'severity': 70.2,
             'title': 'Tornado alert for Oklahoma.',
             'to_date': '2025-06-02 00:00:00'
+        },
+        {
+            'alert_level': 'Red',
+            'country': 'Philippines',
+            'description': 'Typhoon warning issued in Manila region.',
+            'event_id': '6006789',
+            'event_name': 'Manila Typhoon',
+            'event_type': 'TC',
+            'from_date': '2025-06-02 18:00:00',
+            'iso3': 'PHL',
+            'latitude': 14.5995,
+            'longitude': 120.9842,
+            'link': 'https://www.gdacs.org/report.aspx?eventtype=TC&eventid=6006789',
+            'population_exposed': '80000',
+            'pub_date': '2025-06-02 17:45:00',
+            'severity': 90.1,
+            'title': 'Red alert: Typhoon hits Manila.',
+            'to_date': '2025-06-04 08:00:00'
         }
     ])
+
 
 @st.cache_data
 def fetch_data_safely():
