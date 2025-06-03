@@ -617,39 +617,12 @@ def is_valid_email(email):
 def is_valid_phone(phone):
     return re.match(r"^\+?\d{10,15}$", phone)  # Adjust regex as needed
   
-def daily_disaster_alerts(df, subscribers_df):
-    today = pd.to_datetime("today").normalize()
-
-    df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
-    df['to_date'] = pd.to_datetime(df['to_date'], errors='coerce')
-    todays_disasters = df[(df['from_date'] <= today) & (df['to_date'] >= today)]
-
-    if todays_disasters.empty:
-        print("No active disasters today.")
-        return
-
-    for _, subscriber in subscribers_df.iterrows():
-        send_alert_to_subscriber(subscriber, todays_disasters, today)
 # -----------------------------------------------------------
 
 # ---- Inside your Subscribe tab form ----
 if tabs == "Subscribe":
     st.title("📬 Subscribe or Unsubscribe to Alerts")
-     # Load subscribers
-    try:
-        g = Github(TOKEN)
-        repo = g.get_repo(REPO)
-        contents = repo.get_contents(FILE_PATH)
-        csv_str = contents.decoded_content.decode()
-        subscribers_df = pd.read_csv(StringIO(csv_str))
-    except Exception:
-        subscribers_df = pd.DataFrame(columns=["name", "phone", "email", "country", "preferred_alerts"])
-
-    # 🚨 Run disaster alert ONCE when the tab is opened
-    if "alerts_sent" not in st.session_state:
-        daily_disaster_alerts(df, subscribers_df)
-        st.session_state.alerts_sent = True
-    
+     
     # --- Subscribe Form ---
     st.subheader("Subscribe to Alerts")
     with st.form("subscribe_form"):
@@ -699,6 +672,29 @@ if tabs == "Subscribe":
                 st.success("Subscription data saved to GitHub successfully!")
 
                 # --- Send alert if today's disaster matches
+                if 'from_date' in df.columns and 'to_date' in df.columns:
+                    today = pd.to_datetime("2025-06-03")
+                
+                    # Convert from_date and to_date columns to datetime
+                    df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
+                    df['to_date'] = pd.to_datetime(df['to_date'], errors='coerce')
+                
+                    # Filter disasters that are active today
+                    todays_disasters = df[
+                        (df['from_date'] <= today) & 
+                        (df['to_date'] >= today)
+                    ]
+
+                else:
+                    todays_disasters = pd.DataFrame()
+                    
+
+
+                # Alert tracking
+                if "alerts_sent" not in st.session_state:
+                    st.session_state.alerts_sent = {}
+
+                send_alert_to_subscriber(new_data, todays_disasters, today)
                 
 
     st.markdown("---")  # Divider line
