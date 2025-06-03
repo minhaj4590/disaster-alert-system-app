@@ -83,39 +83,45 @@ def send_email(to_email, subject, body):
         print(f"Failed to send email: {e}")
 
 def send_alert_to_subscriber(subscriber, todays_disasters, today):
-    # Clean and split subscriber preferences
-    preferred_list = [a.strip() for a in str(subscriber['preferred_alerts']).split(',')]
-    subscriber_country = str(subscriber['country']).strip()
+    # Normalize country and preferred alerts
+    subscriber_country = str(subscriber['country']).strip().lower()
+    preferred_list = [a.strip().upper() for a in str(subscriber['preferred_alerts']).split(',')]
+
+    st.write(f"Normalized Subscriber Country: {subscriber_country}")
+    st.write(f"Normalized Subscriber Preferred Alerts: {preferred_list}")
 
     for _, dis in todays_disasters.iterrows():
-        disaster_country = str(dis['country']).strip()
-        disaster_type = str(dis['event_type']).strip()
+        disaster_country = str(dis['country']).strip().lower()
+        disaster_type = str(dis['event_type']).strip().upper()
+
+        st.write(f"Checking disaster: {disaster_type} in {disaster_country}")
 
         if subscriber_country == disaster_country and disaster_type in preferred_list:
-            # Prepare and send the alert
-            subject = f"Disaster Alert: {dis['event_name']} ({dis['event_type']})"
+            st.write("✅ Match found, sending email to", subscriber['email'])
+
+            key = f"{subscriber['email']}_{today}"
+            if key in st.session_state.get("alerts_sent", {}):
+                st.write("⚠️ Alert already sent today.")
+                return False  # Already sent
+
+            # Send the email
             message = f"""
-            Dear {subscriber['name']},
+            Hello {subscriber['name']},
+            ⚠️ Alert: {dis['event_type']} reported in {dis['city']} on {dis['from_date'][:10]}.
+            Population exposed: {dis.get('population_exposed', 'Unknown')}
 
-            A disaster alert has been issued for your region ({subscriber_country}):
-            
-            🔔 Alert Level: {dis['alert_level']}
-            🌍 Event: {dis['title']}
-            🕒 From: {dis['from_date']}
-            🕒 To: {dis['to_date']}
-            📍 Location: ({dis['latitude']}, {dis['longitude']})
-            🔗 More info: {dis['link']}
-
-            Stay safe,
-            Disaster Alert System
+            Stay safe.
+            - Disaster Alert System
             """
+            send_email(subscriber['email'], "🌍 Disaster Alert Notification", message)
 
-            # You can send SMS or email here
-            print(f"[ALERT SENT] To: {subscriber['email']} | Event: {dis['event_name']}")
+            # Mark as sent
+            st.session_state.alerts_sent[key] = True
+            return True
 
-            return True  # Match found and alert sent
+    st.write("❌ No matching disasters for this subscriber.")
+    return False
 
-    return False  # No match found
 
 
 
