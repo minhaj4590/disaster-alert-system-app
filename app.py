@@ -631,6 +631,8 @@ def send_email(to_email, subject, body):
 
 today = pd.to_datetime(datetime.now().date())
 match_sub = []
+st.write("Alert sent date in session:", st.session_state.alert_sent_date)
+st.write("Today's date:", today)
 # Ensure key exists in session_state
 if "alert_sent_date" not in st.session_state:
     st.session_state.alert_sent_date = None
