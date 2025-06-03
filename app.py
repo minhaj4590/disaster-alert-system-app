@@ -87,21 +87,12 @@ def send_alert_to_subscriber(subscriber, todays_disasters, today):
     subscriber_country = str(subscriber['country']).strip().lower()
     preferred_list = [a.strip().upper() for a in subscriber['preferred_alerts'].split(',')]
 
-    st.write(f"✅ Normalized Subscriber Country: {subscriber_country}")
-    st.write(f"✅ Normalized Subscriber Preferred Alerts: {preferred_list}")
-    st.write(f"📊 Number of disasters today: {len(todays_disasters)}")
-
     for _, dis in todays_disasters.iterrows():
         # Normalize disaster data
         disaster_country = str(dis['country']).strip().lower()
         disaster_type = str(dis['event_type']).strip().upper()
 
-        # Debug print for each comparison
-        st.write(f"🔍 Comparing: subscriber_country={subscriber_country} == disaster_country={disaster_country}, "
-                 f"disaster_type={disaster_type} in preferred_list={preferred_list}")
-
         if subscriber_country == disaster_country and disaster_type in preferred_list:
-            st.write("✅ Match found, sending email to", subscriber['email'])
             email = subscriber['email']
 
             # Unique key to avoid duplicate emails per day
@@ -128,8 +119,6 @@ def send_alert_to_subscriber(subscriber, todays_disasters, today):
                 st.session_state.alerts_sent = {}
             st.session_state.alerts_sent[key] = True
             return True  # Sent now
-
-    st.write("❌ No matching disasters for this subscriber.")
     return False  # No match found
 
 
@@ -217,13 +206,13 @@ def get_dummy_data():
             'event_id': '2002456',
             'event_name': 'Bihar Floods',
             'event_type': 'FL',
-            'from_date': '2025-06-01 10:00:00',
+            'from_date': '2025-06-03 10:00:00',
             'iso3': 'IND',
             'latitude': 25.0961,
             'longitude': 85.3131,
             'link': 'https://www.gdacs.org/report.aspx?eventtype=FL&eventid=2002456',
             'population_exposed': '50000',
-            'pub_date': '2025-06-01 09:50:00',
+            'pub_date': '2025-06-03 09:50:00',
             'severity': 75.0,
             'title': 'Orange alert for floods in Bihar, India.',
             'to_date': '2025-06-05 18:00:00'
@@ -692,11 +681,9 @@ if tabs == "Subscribe":
 
                 # --- Send alert if today's disaster matches
                 if 'from_date' in df.columns:
-                    today = pd.to_datetime("2025-06-01")
+                    today = pd.Timestamp(datetime.now().date())
                     df['from_date'] = pd.to_datetime(df['from_date'], errors='coerce')
                     todays_disasters = df[df['from_date'].dt.normalize() == today]
-                    st.write("✅ Disasters occurring today:")
-                    st.write(todays_disasters)
                 else:
                     todays_disasters = pd.DataFrame()
                     st.write("⚠️ No 'from_date' column in the dataframe.")
